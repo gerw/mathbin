@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# Usage:
+# used_bibliography file_without_extension
+# or
+# used_bibliography file_without_extension.bcf
+
+# Parse the arguments
+if [ ! $# = 1 ]; then
+	echo "Usage: $(basename $0) file.bcf"
+	exit
+fi
+
+# Search the bcf-file
+file=$1
+
+if ! [ -e $file ] & [ -e $file.bcf ]; then
+	file=$file.bcf
+fi
+
+if ! [ -e $file ]; then
+	echo "Can't find $file."
+	exit 1
+fi
+
+# Search for "<bcf:citekey>.*</bcf:citekey>" in the bcf-file => these are the cited references
+cites=$(grep -Po '<bcf:citekey( order="\d*")>\K[^<]*' $file | sort -u )
+
+# Search for "<bcf:datasource type="file" datatype="bibtex">.*</bcf:datasource>" in the bcf-file => these are the used bib-files.
+    
+bibs=$(grep -Po '<bcf:datasource type="file" datatype="bibtex">\K[^<]*' $file | sort -u | xargs kpsewhich)
+
+# Extract the citations from the bib-files.
+for cite in $cites; do
+	# echo "% Search for $cite"
+	for bib in $bibs; do
+		# echo "% Search in file $bib"
+		awk "BEGIN {RS=\"\n@\"} /{$cite,/{sub(\"^@?\",\"@\");print \"% Search for $cite, Found in file $bib:\n\" \$0 ;}" $bib
+	done
+done
+

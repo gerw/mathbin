@@ -1,0 +1,34 @@
+#!/bin/bash
+#
+# Authors:      Gerd Wachsmuth <gerd.wachsmuth@mathematik.tu-chemnitz.de>
+# Version:      0.1
+# Licence:      GPL v3, see http://www.gnu.org/licenses/gpl.html
+
+if [ "x$1" = "x--help" ]; then
+  # display help message
+  echo "this script reads bib entries from stdin and "
+  echo "Example:"
+  echo " cat Teaching.bib | tail -n 11 | bibtex2pdf"
+  exit 1
+fi
+
+# Name for temporary files
+
+# Remove existing temporary files
+rm -f /tmp/my_tmp_file{1,2}
+
+# Pipe stdin into both bibtex2{doi,filename}
+tee >( bibtex2doi > /tmp/my_tmp_file1 ) | bibtex2filename > /tmp/my_tmp_file2
+
+# Read the temporary files line by line and invoke doi2pdf
+exec 6<"/tmp/my_tmp_file2"
+while read -r line
+do
+	read -r f2line <&6
+	doi2pdf "${line}" "${f2line}"
+done <"/tmp/my_tmp_file1"
+exec 6<&-
+
+# Remove temporary files
+rm -f /tmp/my_tmp_file{1,2}
+

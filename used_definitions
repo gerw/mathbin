@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# Usage:
+# used_definitions tex_file sty_file
+# Print out commands, which are used in the tex_file and are defined in the sty_file
+
+# Parse the arguments
+function usage() {
+	echo "Usage: $(basename $0) file.tex some.sty"
+	echo "prints our the definitions of LaTeX commands defined in some.sty"
+	echo "which are actually used in file.tex"
+}
+
+if [ $# -lt 1 ]; then
+	usage
+	exit 1
+fi
+
+tex_files=''
+sty_files=''
+
+while (( "$#" )); do
+	suffix=`echo $1 | grep "\\.[a-z]*$" -o`
+	if [ "x"$suffix = "x.tex" ]; then
+		tex_files=$tex_files" "$1
+	elif [ "x"$suffix = "x.sty" ]; then
+		sty_files=$sty_files" "$1
+	else
+		echo "Don't know what to do with argument \"$1\"."
+	fi
+	shift
+done;
+
+if [ "x$sty_files" == "x" ]; then
+	usage
+	exit 2
+fi
+
+
+commands=`grep -ho '\\\\[a-zA-Z]\+' $tex_files | sort | uniq`
+
+echo $commands
+
+for i in $commands; do
+	grep -h "^[ 	]*\\\\\(renewcommand\|newcommand\|providecommand\|DeclareMathOperator\|DeclareMathSymbol\)\*\?{\\"$i"}" $sty_files
+	grep -h "^[ 	]*\\\\def\\"$i"[ #{]" $sty_files
+done

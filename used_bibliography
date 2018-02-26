@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Usage:
+# used_bibliography file_without_extension
+# or
+# used_bibliography file_without_extension.aux
+
+# Parse the arguments
+if [ ! $# = 1 ]; then
+	echo "Usage: $(basename $0) file.aux"
+	exit
+fi
+
+# Search the aux-file
+file=$1
+
+if ! [ -e $file ] & [ -e $file.aux ]; then
+	file=$file.aux
+fi
+
+if ! [ -e $file ]; then
+	echo "Can't find $file."
+	exit 1
+fi
+
+# Search for "\citation{.*}" in the aux-file => these are the cited references
+cites=$(awk "/^\\\\citation{.*}$/{sub(\"^\\\\\\\citation{\",\"\"); sub(\"}$\",\"\"); print;}" $file | awk "{gsub(\",\",\"\n\"); print}" | sort | uniq )
+
+# Search for "\bibdata{.*}" in the aux-file => these are the used bib-files.
+bibs=$(awk "/^\\\\bibdata{.*}$/{sub(\"^\\\\\\\bibdata{\",\"\"); sub(\"}$\",\".bib\"); print;}" $file | awk "{gsub(\",\",\".bib\n\"); print;}" | sort | uniq | xargs kpsewhich)
+
+# Extract the citations from the bib-files.
+for cite in $cites; do
+	for bib in $bibs; do
+		awk "BEGIN {RS=\"\n@\"} /{$cite,/{sub(\"^@?\",\"@\");print \"% Search for $cite, Found in file $bib:\n\" \$0 ;}" $bib
+	done
+done
+

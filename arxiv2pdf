@@ -1,0 +1,74 @@
+#!/bin/bash
+
+# Script for downloading a PDF from a given arXiv identifier
+#      
+# Usage:    arxiv2pdf arXiv [filename]
+#           arxiv2pdf http://arxiv.org/abs/arXiv [filename]
+#      
+# If filename is omitted the raw PDF is written to a temporary file.
+#      
+# Example:  arxiv2pdf 1412.3740
+# Example:  arxiv2pdf math/0602029   (old arXiv format)
+#
+# Notes:
+
+
+# Issue help message if necessary
+if [ $# = 0 ] || [ "x$1" = "x--help" ]; then
+	echo "Usage: $(basename $0) arXiv [filename]"
+	echo "or:    $(basename $0) http://arxiv.org/abs/arXiv [filename]"
+	echo "will try and retrieve the PDF file for the arXiv identifier given."
+	echo 
+	echo "Example: $(basename $0) 1701.06092"
+	echo "         $(basename $0) 1701.06092v1"
+	echo "         $(basename $0) http://arxiv.org/abs/1701.06092v1"
+	echo "         $(basename $0) math/0602029"
+	echo "         $(basename $0) http://arxiv.org/abs/math/0602029"
+	exit 1
+fi
+
+# Unify the calling syntax
+arxivpattern='([0-9]{4}\.[0-9]{4,}([v][0-9]*)?|[-a-z]{1,}/[0-9]{7})$'
+if [[ $1 =~ $arxivpattern ]]; then
+	arxiv=${BASH_REMATCH[1]}
+else
+	echo "Failed to find arXiv pattern."
+	exit 1
+fi
+
+# Get web page from arxiv
+tmpfile=/tmp/$RANDOM$RANDOM
+# echo $1
+# echo $arxiv
+curl -sL http://arxiv.org/abs/$arxiv > ${tmpfile}
+
+# Get download URL 
+downloadpattern="<meta name=\"citation_pdf_url\" content=\"([^\"]+)\""
+
+# Retrieve download URL
+# echo $downloadpattern
+downloadurl=$(grep --only -E "$downloadpattern" ${tmpfile} | cut -f4 -d\")
+
+
+# Assign outfile name
+if [ -z "$2" ]; then
+	# No filename given. Guess one from the arxiv page.
+	outfile=$(arxiv2pdfname.sh $arxiv)
+	echo ${outfile}
+else
+	outfile=$2
+fi
+
+# Delete designated file, if it exists
+rm -f ${outfile}
+
+# Get pdf from arxiv
+# echo Executing wget -O $outfile -q --user-agent="Mozilla/5.0" $downloadurl
+wget -O ${outfile} -q --user-agent="Mozilla/5.0" ${downloadurl}
+
+echo "File written to \"${outfile}\"."
+
+# Clean up and exit
+rm ${tmpfile}
+exit 0
+

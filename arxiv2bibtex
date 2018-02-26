@@ -1,0 +1,53 @@
+#!/bin/bash
+
+# Script for generating a bibtex entry from a given arXiv identifier
+#      
+# Usage:    arxiv2bibtex arXiv
+#           arxiv2bibtex http://arxiv.org/abs/arXiv
+#      
+# Example:  arxiv2bibtex 1412.3740 >> ~/World.bib
+# Example:  arxiv2pdf math/0602029 >> references.bib (old arXiv format)
+
+
+# Issue help message if necessary
+if [ $# = 0 ] || [ "x$1" = "x--help" ]; then
+	echo "Usage: $(basename $0) arXiv"
+	echo "or:    $(basename $0) http://arxiv.org/abs/arXiv"
+	echo "will try and retrieve a bibtex entry for the arXiv identifier given."
+	echo 
+	echo "Example: $(basename $0) 1701.06092"
+	echo "         $(basename $0) 1701.06092v1"
+	echo "         $(basename $0) http://arxiv.org/abs/1701.06092v1"
+	echo "         $(basename $0) math/0602029"
+	echo "         $(basename $0) http://arxiv.org/abs/math/0602029"
+	exit 1
+fi
+
+
+# Unify the calling syntax
+arxivpattern='([0-9]{4}\.[0-9]{4,}([v][0-9]*)?|[a-z]{1,}/[0-9]{7})$'
+if [[ $1 =~ $arxivpattern ]]; then
+	arxiv=${BASH_REMATCH[1]}
+else
+	echo "Failed to find arXiv pattern."
+	exit 1
+fi
+
+# echo $arxiv
+
+
+# arxivnodots="${arxiv//./}"
+# 
+# URL="http://adsabs.harvard.edu/cgi-bin/bib_query?arXiv:$arxiv"
+# 
+# # Get URL of bibtex entry
+# URL=$(wget -O - $URL | grep 'Bibtex entry for' | perl -ne '/<a href="(.*?)">/ and print "$1\n"')
+# 
+# wget -O - $URL
+
+# Better?
+URL="https://arxiv2bibtex.org/?q=$arxiv&format=biblatex"
+
+wget -O - $URL -q | xmllint  --xpath '//div[@id="biblatex"]/textarea/text()' -
+
+echo

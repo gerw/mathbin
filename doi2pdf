@@ -1,0 +1,73 @@
+#!/bin/bash
+
+# Script for finding and downloading a PDF or PS for a given 
+# Digital Object Identifier (DOI), which usually points to a website 
+# containing a link to the actual file.
+#      
+# Usage:    doi2pdf DOI [filename]
+#           doi2pdf http://dx.doi.org/DOI [filename]
+#      
+# If filename is omitted the raw PDF/PS is written to a temporary file.
+#      
+# Example:  doi2pdf 10.1016/j.orl.2012.11.009
+#
+# Notes:
+#    IEEE is not working because it uses JavaScript
+
+function test()
+{
+	grep doi ../../Resources/Bibliography/World.bib | sed 's/[ \t,}]//g' | sed 's#doi={#http://dx.doi.org/#g' | while read doi
+	do
+		php doi2pdf.php $doi /dev/null
+
+		if [ $? -eq 0 ]
+		then
+			echo *PASS* $doi
+		else
+			echo *FAIL* $doi
+		fi
+	done
+}
+
+function gettmpfile()
+{
+	local tmppath=${1:-/tmp}
+	local tmpfile=$2${2:+-}
+	tmpfile=$tmppath/$tmpfile$RANDOM$RANDOM.tmp
+	if [ -e $tmpfile ]
+	then
+		# if file already exists, recurse and try again
+		tmpfile=$(gettmpfile $1 $2)
+	fi
+	echo $tmpfile
+}
+
+# Issue help message if necessary
+if [ $# = 0 ]; then
+	echo "Usage: $(basename $0) DOI [filename]"
+	echo "or:    $(basename $0) http://dx.doi.org/DOI [filename]"
+	echo "will try and retrieve the PDF file for the DOI given and save it to filename or writes to stdout if filename is omitted."
+	exit 1
+fi
+
+# Extract doi. Pattern from https://github.com/regexhq/doi-regex/blob/master/index.js
+DOI=$(echo $1 | grep '10[.][0-9]{4,}(?:[.][0-9]+)*/(?:(?![%"#? ])\S)+' -P -o )
+
+
+# Assign output file name if possible
+# and call doi2pdf.php
+if [ -z "$2" ]
+then
+	# invent a good filename
+	FN=$(doi2pdfname.sh "$DOI")
+	if [ -z "$FN" ]
+	then
+		FN=$(gettmpfile);
+	fi
+	php $(dirname $0)/doi2pdf.php $DOI $FN || exit 1
+else
+	php $(dirname $0)/doi2pdf.php $@ || exit 1
+fi
+
+exit 0
+

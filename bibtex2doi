@@ -1,0 +1,33 @@
+#!/bin/bash
+#
+# Authors:      Gerd Wachsmuth <gerd.wachsmuth@mathematik.tu-chemnitz.de>
+# Version:      0.1
+# Licence:      GPL v3, see http://www.gnu.org/licenses/gpl.html
+
+if [ "x$1" = "x--help" ]; then
+  echo "this script reads bib entries from stdin and extracts doi"
+  echo "Example:"
+  echo " cat Teaching.bib | bibtex2doi"
+  exit 1
+fi
+
+
+PROG2='
+BEGIN{doi="NO_DOI_FOUND";}
+/^}$/{
+	printf "%s\n",doi;
+	next;
+}
+/ *[A-Z]* *=/{
+	split($0, a, "=");
+	if( match(tolower(a[1]), /^ *doi *$/) ) {
+		start = match(a[2],"{") + 1;
+		end = match(a[2],"}") - 1;
+		doi = substr(a[2], start, end - start + 1);
+		// Trim whitespace
+		doi = gensub(" ", "", "g", doi);
+	}
+}'
+
+gawk "$PROG2"
+

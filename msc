@@ -1,0 +1,124 @@
+#!/bin/bash
+
+# msc - A wrapper script for nicer output of mathscinet.pl
+#
+# Authors:      Roland Herzog <roland.herzog@mathematik.tu-chemnitz.de>
+#               Gerd Wachsmuth <gerd.wachsmuth@mathematik.tu-chemnitz.de>
+# Version:      0.2
+# Licence:      GPL v3, see http://www.gnu.org/licenses/gpl.html
+
+PROG1='
+BEGIN {
+	delete_this_entry = 0;
+};
+/^@/ {
+	# Print the header of the entry.
+	gsub(" ", "");
+	print(toupper($0));
+	next;
+}
+/^ *(MRNUMBER|MRREVIEWER|MRCLASS|CODEN|[^F]JOURNAL|URL = {http:\/\/dx\.doi\.org)/ {
+	# Delete certain unnecessary entries.
+	delete_this_entry = 1;
+	next;
+};
+/^ *[A-Z]+ =/ {
+	# Do not delete the remaining entries.
+	delete_this_entry = 0;
+	gsub("FJOURNAL", " JOURNAL");
+	print;
+	next;
+};
+/^}$/ {
+	print;
+	next;
+};
+// {
+	if (delete_this_entry == 0)
+		print;
+};'
+
+PROG2='
+/@[A-Z]*{[A-Za-z0-9.]*,/{
+	# Save the header and init some variables.
+	head=substr($0,0,match($0,"{"));
+	body="";
+	authors_active=0;
+	have_read_authors=0;
+	year=0;
+	next;
+}
+/^}$/{
+	# This is the end of the entry. Print everything!
+	body=body $0;
+	printf "%s",head;
+	# Create a nice label (authors or editors and year) for the entry.
+	count=split(authors,author_array," +and +");
+	for( i=1; i<=count; i++ ) {
+		# First, try whether the names are given as "lastname, firstname"
+		idx=match(author_array[i],", ");
+		lastname=substr(author_array[i],0,idx-1);
+		if( idx == 0 ) {
+			# Now, try for "firstname lastname"
+			idx=match(author_array[i]," [^ ]*$");
+			lastname=substr(author_array[i],idx+1,length(author_array[i]));
+		}
+		lastname=gensub("{\\\\\"([a-zA-Z])}","\\1e","g", lastname); # test for {umlauts}
+		lastname=gensub("\\\\\"([a-zA-Z])","\\1e","g", lastname);   # test for umlauts
+		lastname=gensub("{\\\\ss}","ss","g", lastname);             # test for eszett
+		lastname=gensub("{[^{}]*([a-zA-Z])}","\\1","g", lastname);  # test for accents (this is needed two times, e.g. for "{\v{c}}")
+		lastname=gensub("{[^{}]*([a-zA-Z])}","\\1","g", lastname);
+		lastname=gensub("\\\\'\''","","g", lastname);               # Remove \apostroph
+		lastname=gensub("'\''","","g", lastname);                   # Remove apostroph
+		lastname=gensub("},$","","g", lastname);                    # Remove closing }
+		word_count = split( lastname, lastname_array, " ");         # Split lastname into words and capitalize each of them
+		lastname = "";
+		for( j=1; j<= word_count; j++ ) {                           # Fuer Juan Carlos ;)
+			lastname = lastname toupper(substr(lastname_array[j],1,1)) substr(lastname_array[j],2,1000);
+		}
+		printf "%s",lastname;
+	};
+	print year ",";
+	print body;
+	next;
+}
+/ *[A-Z]* =/{
+	if( $1 == "AUTHOR" ) {
+		# If we already have read the editors, we overwrite them.
+		authors=substr($0,match($0,"{")+1,100);
+		authors_active=1;
+		have_read_authors=1;
+	}
+	else if( ($1 == "EDITOR") && !have_read_authors){
+		# If we already have read the authors, we skip the editors.
+		authors=substr($0,match($0,"{")+1,100);
+		authors_active=1;
+	}
+	else {
+		authors_active=0;
+		if($1 == "YEAR"){
+			year=substr($0,match($0,"[[0-9]]*"),4)
+		}
+	};
+
+	# Extract DOI from URL
+	if( $1 == "URL" && match($3, "https://doi.org/") ) {
+		gsub("URL", "DOI");
+		gsub("https://doi.org/", "");
+	}
+}
+/^[^=]*$/{
+	if(authors_active){
+		authors=authors $0;
+	}
+}
+//{
+	body=body $0 "\n";
+	next;
+}'
+
+mathscinet.pl "$@" | awk "$PROG1" | gawk "$PROG2"
+
+# add a newline
+echo
+

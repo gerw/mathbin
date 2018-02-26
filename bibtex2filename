@@ -1,0 +1,163 @@
+#!/bin/bash
+
+#
+# Authors:      Gerd Wachsmuth <gerd.wachsmuth@mathematik.tu-chemnitz.de>
+# Version:      0.1
+# Licence:      GPL v3, see http://www.gnu.org/licenses/gpl.html
+
+# Einschränkungen: Die Autoren müssen in der Form "Nachname, Vorname" und nicht "Vorname Nachname" vorliegen.
+# TODO: Automatisches Hinzufügen der Endungen wie _BOOK anhand des BibTeX-Eintrags.
+
+if [ "x$1" = "x--help" ]; then
+  # display help message
+  echo "this script reads bib entries from stdin and converts them to filenames"
+  echo "Example:"
+  echo " cat Teaching.bib | bibtex2filename"
+  exit 1
+fi
+
+
+PROG2='
+BEGIN{
+	i = 0;
+	translate[i,0] = "\\{?\\\\\"a\\}?"; translate[i++,1] = "ä";
+	translate[i,0] = "\\{?\\\\\"e\\}?"; translate[i++,1] = "ë";
+	translate[i,0] = "\\{?\\\\\"o\\}?"; translate[i++,1] = "ö";
+	translate[i,0] = "\\{?\\\\\"u\\}?"; translate[i++,1] = "ü";
+	translate[i,0] = "\\{?\\\\\"A\\}?"; translate[i++,1] = "Ä";
+	translate[i,0] = "\\{?\\\\\"E\\}?"; translate[i++,1] = "Ë";
+	translate[i,0] = "\\{?\\\\\"O\\}?"; translate[i++,1] = "Ö";
+	translate[i,0] = "\\{?\\\\\"U\\}?"; translate[i++,1] = "Ü";
+	translate[i,0] = "\\{?\\\\ss\\}?"; translate[i++,1] = "ß";
+	translate[i,0] = "\\{?\\\\'\''a\\}?"; translate[i++,1] = "á";
+	translate[i,0] = "\\{?\\\\'\''e\\}?"; translate[i++,1] = "é";
+	translate[i,0] = "\\{?\\\\'\''i\\}?"; translate[i++,1] = "í";
+	translate[i,0] = "\\{?\\\\'\''\\{\\\\i\\}\\}?"; translate[i++,1] = "í";
+	translate[i,0] = "\\{?\\\\'\''o\\}?"; translate[i++,1] = "ó";
+	translate[i,0] = "\\{?\\\\'\''u\\}?"; translate[i++,1] = "ú";
+	translate[i,0] = "\\{?\\\\'\''A\\}?"; translate[i++,1] = "Á";
+	translate[i,0] = "\\{?\\\\'\''E\\}?"; translate[i++,1] = "É";
+	translate[i,0] = "\\{?\\\\'\''I\\}?"; translate[i++,1] = "Í";
+	translate[i,0] = "\\{?\\\\'\''O\\}?"; translate[i++,1] = "Ó";
+	translate[i,0] = "\\{?\\\\'\''U\\}?"; translate[i++,1] = "Ú";
+	translate[i,0] = "\\{?\\\\'\''n\\}?"; translate[i++,1] = "ń";
+	translate[i,0] = "\\{?\\\\'\''N\\}?"; translate[i++,1] = "Ń";
+	translate[i,0] = "\\{?\\\\v\\{? ?s\\}?\\}?"; translate[i++,1] = "š";
+	translate[i,0] = "\\{?\\\\v\\{?r\\}?\\}?"; translate[i++,1] = "ř";
+	translate[i,0] = "\\{?\\\\v\\{?z\\}?\\}?"; translate[i++,1] = "ž";
+	translate[i,0] = "\\{?\\\\v\\{?c\\}?\\}?"; translate[i++,1] = "č";
+	translate[i,0] = "\\{?\\\\c\\{?t\\}?\\}?"; translate[i++,1] = "ţ";
+	translate[i,0] = "\\{?\\\\`a\\}?"; translate[i++,1] = "à";
+	translate[i,0] = "\\{?\\\\`e\\}?"; translate[i++,1] = "è";
+	translate[i,0] = "\\{?\\\\`i\\}?"; translate[i++,1] = "ì";
+	translate[i,0] = "\\{?\\\\`\\{\\\\i\\}\\}?"; translate[i++,1] = "ì";
+	translate[i,0] = "\\{?\\\\`o\\}?"; translate[i++,1] = "ò";
+	translate[i,0] = "\\{?\\\\`u\\}?"; translate[i++,1] = "ù";
+	translate[i,0] = "\\{?\\\\`A\\}?"; translate[i++,1] = "À";
+	translate[i,0] = "\\{?\\\\`E\\}?"; translate[i++,1] = "È";
+	translate[i,0] = "\\{?\\\\`I\\}?"; translate[i++,1] = "Ì";
+	translate[i,0] = "\\{?\\\\`O\\}?"; translate[i++,1] = "Ò";
+	translate[i,0] = "\\{?\\\\`U\\}?"; translate[i++,1] = "Ù";
+	translate[i,0] = "\\{?\\\\~n\\}?"; translate[i++,1] = "ñ";
+	translate[i,0] = "\\{?\\\\~N\\}?"; translate[i++,1] = "Ñ";
+	translate[i,0] = "\\{?\\\\o\\}?"; translate[i++,1] = "ø";
+	translate[i,0] = "\\{?\\\\O\\}?"; translate[i++,1] = "Ø";
+	translate[i,0] = "\\{?\\\\l\\}?"; translate[i++,1] = "ł";
+	translate[i,0] = "\\{?\\\\L\\}?"; translate[i++,1] = "Ł";
+	translate[i,0] = "\\\\ae\\{\\}?"; translate[i++,1] = "æ";
+	translate[i,0] = "\\\\AE\\{\\}?"; translate[i++,1] = "Æ";
+	translate[i,0] = "\\{?\\\\\\^o\\}?"; translate[i++,1] = "ô";
+	translate[i,0] = "\\{?\\\\\\^O\\}?"; translate[i++,1] = "Ô";
+	translate[i,0] = "\\{?\\\\u\\\\i\\}?"; translate[i++,1] = "ĭ";
+	translate[i,0] = "\\{?\\\\'\''y\\}?"; translate[i++,1] = "ý";
+	translate[i,0] = "\\{?\\\\'\''Y\\}?"; translate[i++,1] = "Ý";
+	translate[i,0] = "\\{?\\\\\\.Z\\}?"; translate[i++,1] = "Ż";
+
+
+	# Remove remaining curly brackets:
+	translate[i,0] = "\\{"; translate[i++,1] = "";
+	translate[i,0] = "\\}"; translate[i++,1] = "";
+}
+/@[A-Za-z]*{[A-Za-z0-9.:_]*,/{
+	# Save the header and init some variables.
+	head=substr($0,0,match($0,"{"));
+	authors_active=0;
+	title_active=0;
+	have_read_authors=0;
+	authors="";
+	title="";
+	next;
+}
+/^}$/{
+	# This is the end of the entry. Print everything!
+	authors = substr(authors, 0, match(authors, "},?$")-1);
+	count=split(authors,author_array," +and +");
+	for( i=1; i<=count; i++ ) {
+		if( match(author_array[i],",") )
+			lastname=substr(author_array[i],0,match(author_array[i],",")-1);
+		else
+			lastname=substr(author_array[i],match(author_array[i]," [^ ]*$")+1, 1000);
+
+		for (j = 0; j < length(translate)/2; j++) {
+			lastname = gensub( translate[j,0], translate[j,1], "g", lastname );
+		}
+
+		word_count = split( lastname, lastname_array, " ");         # Split lastname into words and capitalize each of them
+		lastname = "";
+		for( j=1; j<= word_count; j++ ) {                           # Fuer Juan Carlos ;)
+			lastname = lastname toupper(substr(lastname_array[j],1,1)) substr(lastname_array[j],2,1000);
+		}
+		printf "%s_",lastname;
+	};
+
+	for (j = 0; j < length(translate)/2; j++) {
+		title = gensub( translate[j,0], translate[j,1], "g", title );
+	}
+	# Remove {}
+	title = gensub("[{}]","","g", title);
+
+
+	printf "_%s",gensub(" ","_","g",substr(title,0,match(title,"[ 	]*,$")-1));
+	printf ".pdf\n";
+	next;
+}
+/ *[A-Z]* ?=/{
+	authors_active=0;
+	title_active = 0;
+	if( match($1, "=") ) {
+		keyword = substr($1, 0, match($1, "=")-1);
+	}
+	else {
+		keyword = $1;
+	}
+
+	if( tolower(keyword) == "author" ) {
+		# If we already have read the editors, we overwrite them.
+		authors=substr($0,match($0,"{")+1,1000);
+		authors_active=1;
+		have_read_authors=1;
+	}
+	else if( (tolower(keyword) == "editor") && !have_read_authors){
+		# If we already have read the authors, we skip the editors.
+		authors=substr($0,match($0,"{")+1,1000);
+		authors_active=1;
+	}
+	else {
+		if(tolower(keyword) == "title"){
+			title=substr($0,match($0,"{")+1,1000);
+			title_active=1;
+		}
+	};
+	next;
+}
+/^[^=]*$/{
+	if(authors_active){
+		authors=authors $0;
+	}
+	else if(title_active){
+		title=title " " substr($0,match($0,"[^	 ]"));
+	}
+}
+'
+
+gawk "$PROG2"

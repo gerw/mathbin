@@ -1,0 +1,123 @@
+#!/bin/bash                              
+# Call this script like
+#   Springerbook http://www.springerlink.com/content/978-3-540-74119-0  or 
+#   Springerbook http://link.springer.com/book/10.1007/0-387-32995-1
+# where the final digits are the ISBN numbers
+
+# Parse the arguments
+if [ ! $# = 1 ]; then
+	echo "Usage: $(basename $0) URL-to-Springer-content"
+	echo "Example: $(basename $0) http://www.springerlink.com/content/978-3-540-74119-0"
+	echo "Example: $(basename $0) http://link.springer.com/book/10.1007/0-387-32995-1"
+	exit
+fi
+
+# First (and only) command line argument is the URL of the online resource
+URL=$1                                                                     
+ISBN=`echo $URL | grep -o '[0-9]\{3\}-[0-9]\{1\}-[0-9]\{3,5\}-[0-9]\{3,5\}-[0-9X]\{1\}'`
+if [ $ISBN"xxx" == "xxx" ]; then
+	# Alternative: just try to download $1 and grep the ISBN there.
+	download=$(mktemp) # Generate temp filename
+	wget --user-agent="Mozilla/5.0" $1 -O $download
+	ISBN=`grep -o '[0-9]\{3\}-[0-9]\{1,2\}-[0-9]\{3,5\}-[0-9]\{3,5\}-[0-9X]\{1\} (Print)' $download | grep -o '[0-9-]*'`
+	rm $download
+	if [ $ISBN"xxx" == "xxx" ]; then
+		echo "$(basename $0): Failed to parse ISBN."
+		exit 1
+	fi
+fi
+
+echo "Looking up $URL (ISBN $ISBN)"
+
+# Remember the current directory
+pushd .
+
+# Make a temporary directory 
+echo "Making directory /tmp/$ISBN"
+rm -rf /tmp/$ISBN
+mkdir /tmp/$ISBN
+
+# Get the source
+cd /tmp/$ISBN
+echo "$(basename $0): Getting the HTML source"
+wget --user-agent="Mozilla/5.0" http://www.springerlink.com/content/$ISBN/contents -O source
+
+# If resource was secured, print an error message and exit
+grep --silent "Get Access" source
+if [ $? == 0 ]; then
+	echo "$(basename $0): Resource seems to be secured."
+	exit
+fi
+
+# Try to find the title of the book.
+TITLE=$(grep 'id="title"' source | grep -o ">.*<" | grep -o "[^<>]*" | awk '//{gsub(" ","_"); print;}')
+AUTHORS=$(awk 'BEGIN{a=0}/<ul class="authors"/{a=1}//{if(a==1)print;}/<\/ul/{if(a==1)exit 1;}' source | grep 'itemprop="name"' | grep -o ">.*</a" | grep -o ">.*<"| grep -o '[-[:alnum:]. ]*' | grep -o "[[:alnum:]]*$" | awk '//{printf $1 "_";}')
+BOOKTITLE=${AUTHORS}_${TITLE}_BOOK
+
+
+# Find link to full book download
+FULLBOOKPATH=$(grep "action-bar-download-book-pdf-link" < source | head -n 1 | grep 'href=".*"' -o | grep "\/.*.pdf" -o)
+
+if [[ "X$FULLBOOKPATH" != "X" ]]; then
+	echo "$(basename $0): Getting the full book"
+
+	# Download full book
+	wget --user-agent="Mozilla/5.0" http://link.springer.com$FULLBOOKPATH -o logfile
+
+	# Find name of PDF
+	PDF=$(perl -ne '/^Saving to: (‘|\`|“)(.+?)(’|'\''|”)$/ and print "$2\n";' < logfile)
+
+	# Rename
+	mv "$PDF" "$BOOKTITLE.pdf"
+else
+	# Get all pages
+	while grep 'class="next"' source | tail -n 1 | grep -q '<a class="next"'; do
+		nextpage=$(grep 'class="next"' source | tail -n 1 | grep -o '/book/[^"]*')
+		wget --user-agent="Mozilla/5.0" http://link.springer.com$nextpage -O - >> source
+	done
+
+	# Parse the source to retrieve an ordered list of download URLs
+	# Old method (pre 2012/10/16, does not work with http://www.springerlink.com/content/978-3-642-17817-7/contents
+	# grep "Download PDF" source | grep -o -e '"[^"]*\.pdf"' | grep -o '[^"]*' > list
+	# # Filter out lines which do not end in ".pdf"
+	# grep -e '\.pdf$' list > list2
+
+	# New method (post 2012/11/06)
+	awk 'BEGIN{a=0}/<span class="action"/{a=1}//{if(a==1)print;}/<\/span/{a=0;}' source | grep -o -e 'href="/content/[^"]*"' | grep -o -e '/content/[^"]*' > list
+
+	# Retrieve the individual files from Springer
+	echo "$(basename $0): Getting the individual chapter files"
+	wget --user-agent="Mozilla/5.0" -i list --base="http://link.springer.com" -o logfile
+
+	# If resource was secured, print an error message and exit
+	grep --silent resource-secured logfile
+	if [ $? == 0 ]; then
+		echo "$(basename $0): Resource seems to be secured."
+		exit
+	fi
+
+	# Create a list of files to concatenate
+	perl -ne '/^Saving to: (‘|\`|“)(.+?)(’|'\''|”)$/ and print "$2\n";' < logfile > download_list
+
+	# pdftk is confused by the name of the downloaded files.
+	# Therefore, we rename them.
+	j=0;
+	rm -f concat_list;
+	for i in $(cat download_list); do
+		mv "$i" $((++j)).pdf;
+		echo $j.pdf >> concat_list
+	done
+
+	# Concatenate the pdf files to a book
+	echo "$(basename $0): Concatenating files"
+	pdftk `cat concat_list` cat output $BOOKTITLE.pdf
+fi
+
+# Return to the current directory
+popd
+
+
+# Inform the user
+echo "The book has been compiled and now resides in /tmp/$ISBN/$BOOKTITLE.pdf"
+
+
