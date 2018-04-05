@@ -58,8 +58,6 @@ BOOKTITLE=${AUTHORS}_${TITLE}_BOOK
 # Find link to full book download
 FULLBOOKPATH=$(grep "gtm-bookpdf-link" < source | head -n 1 | grep 'href="[^\"]*"' -o | grep "\/[^\"]*.pdf" -o)
 
-FULLBOOKPATH=""
-
 if [[ "X$FULLBOOKPATH" != "X" ]]; then
 	echo "$(basename $0): Getting the full book"
 
