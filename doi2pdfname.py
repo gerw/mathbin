@@ -10,10 +10,13 @@ root = tree.getroot()
 
 names = []
 title = ""
+suffix = ""
 
 for child in root.iter():
 	# print child.tag
-	if re.search('(content_item|journal_article)$', child.tag):
+	if re.search('book$', child.tag):
+		suffix = "_BOOK"
+	if re.search('(content_item|journal_article|book)$', child.tag):
 		for grandchild in child.iter():
 			if re.search('surname$', grandchild.tag):
 				name = grandchild.text.strip()
@@ -28,7 +31,7 @@ for child in root.iter():
 				title = ' '.join(title.split())
 
 
-filename = '_'.join(names) + "__" + title + ".pdf"
+filename = '_'.join(names) + "__" + title + suffix + ".pdf"
 
 # replace some special characters in filename
 items = {
