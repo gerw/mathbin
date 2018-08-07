@@ -50,13 +50,13 @@ if [ $? == 0 ]; then
 fi
 
 # Try to find the title of the book.
-TITLE=$(grep 'id="title"' source | grep -o ">.*<" | grep -o "[^<>]*" | awk '//{gsub(" ","_"); print;}')
-AUTHORS=$(awk 'BEGIN{a=0}/<ul class="authors"/{a=1}//{if(a==1)print;}/<\/ul/{if(a==1)exit 1;}' source | grep 'itemprop="name"' | grep -o ">.*</a" | grep -o ">.*<"| grep -o '[-[:alnum:]. ]*' | grep -o "[[:alnum:]]*$" | awk '//{printf $1 "_";}')
+TITLE=$(grep '<h1>' source | grep -o ">.*<" | grep -o "[^<>]*" | awk '//{gsub(" ","_"); print;}')
+AUTHORS=$(grep -P '(?<="authors__name">)[^<]*(?=<)' -o < source | grep -o '[-[:alnum:]. ]*$'| awk '//{printf $1 "_";}')
 BOOKTITLE=${AUTHORS}_${TITLE}_BOOK
 
 
 # Find link to full book download
-FULLBOOKPATH=$(grep "action-bar-download-book-pdf-link" < source | head -n 1 | grep 'href=".*"' -o | grep "\/.*.pdf" -o)
+FULLBOOKPATH=$(grep "gtm-bookpdf-link" < source | head -n 1 | grep 'href="[^\"]*"' -o | grep "\/[^\"]*.pdf" -o)
 
 if [[ "X$FULLBOOKPATH" != "X" ]]; then
 	echo "$(basename $0): Getting the full book"
@@ -83,7 +83,10 @@ else
 	# grep -e '\.pdf$' list > list2
 
 	# New method (post 2012/11/06)
-	awk 'BEGIN{a=0}/<span class="action"/{a=1}//{if(a==1)print;}/<\/span/{a=0;}' source | grep -o -e 'href="/content/[^"]*"' | grep -o -e '/content/[^"]*' > list
+	# awk 'BEGIN{a=0}/<span class="content-type-list__action-label"/{a=1}//{if(a==1)print;}/<\/span/{a=0;}' source | grep -o -e 'href="/content/[^"]*"' | grep -o -e '/content/[^"]*' > list
+
+	# New method (post 2018/04/05)
+	grep '<a class="content-type-list__action-label' < source | grep 'href="[^\"]*"' -o | grep "\/[^\"]*.pdf" -o > list
 
 	# Retrieve the individual files from Springer
 	echo "$(basename $0): Getting the individual chapter files"
