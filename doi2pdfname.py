@@ -32,7 +32,7 @@ filename = '_'.join(names) + "__" + title + ".pdf"
 
 # replace some special characters in filename
 items = {
-	'/': ' ',
+	'/': '_',
 	' ': '_'
 }
 for s, r in items.iteritems():
