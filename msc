@@ -17,7 +17,7 @@ BEGIN {
 	print(toupper($0));
 	next;
 }
-/^ *(MRNUMBER|MRREVIEWER|MRCLASS|CODEN|[^F]JOURNAL|URL = {http:\/\/dx\.doi\.org)/ {
+/^ *(MRNUMBER|MRREVIEWER|MRCLASS|CODEN|[^F]JOURNAL|URL = {http[s]?:\/\/dx\.doi\.org)/ {
 	# Delete certain unnecessary entries.
 	delete_this_entry = 1;
 	next;
@@ -117,7 +117,7 @@ PROG2='
 	next;
 }'
 
-mathscinet.pl "$@" | awk "$PROG1" | gawk "$PROG2"
+mathscinet.pl "$@" | awk "$PROG1" | gawk "$PROG2" | awk '!seen[$0]++'
 
 # add a newline
 echo
