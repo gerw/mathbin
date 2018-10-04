@@ -45,6 +45,7 @@ PROG2='
 	body="";
 	authors_active=0;
 	have_read_authors=0;
+	have_read_doi=0;
 	year=0;
 	next;
 }
@@ -101,11 +102,19 @@ PROG2='
 		}
 	};
 
-	# Extract DOI from URL
-	if( $1 == "URL" && match($3, "https://doi.org/") ) {
-		gsub("URL", "DOI");
-		gsub("https://doi.org/", "");
-	}
+	# Extract DOI from URL if no DOI was previously found
+	if( $1 == "DOI" ) {
+		have_read_doi=1;
+	};
+	if ($1 == "URL") {
+		if ( (have_read_doi == 0) && match($3, "https://doi.org/") ) {
+			gsub("URL", "DOI");
+			gsub("https://doi.org/", "");
+		}
+		else {
+			next
+		};
+	};
 }
 /^[^=]*$/{
 	if(authors_active){
@@ -117,7 +126,8 @@ PROG2='
 	next;
 }'
 
-mathscinet.pl "$@" | awk "$PROG1" | gawk "$PROG2" | awk '!seen[$0]++'
+# mathscinet.pl "$@" | awk "$PROG1" | gawk "$PROG2" | awk '!seen[$0]++'
+mathscinet.pl "$@" | awk "$PROG1" | gawk "$PROG2" 
 
 # add a newline
 echo
