@@ -19,8 +19,9 @@ tmpfile=/tmp/$RANDOM$RANDOM
 curl -sL http://arxiv.org/abs/$1 > $tmpfile
 
 # Get title
+# Replace space, slashe /, apostrophe ', colon : by underscore _
 titlepattern="<meta name=\"citation_title\" content=\"([^\"]+)\""
-title=$( perl -ne "/$titlepattern/ and print \$1" < $tmpfile | awk '{gsub(" ","_"); gsub("/","_"); gsub("&#x27;","\x27"); print}')
+title=$( perl -ne "/$titlepattern/ and print \$1" < $tmpfile | awk '{gsub(" ","_"); gsub("/","_"); gsub("&#x27;","\x27"); gsub(":","_"); print}')
 
 # Get authors
 authorpattern="<meta name=\"citation_author\" content=\"([^\"]+),.*\""
