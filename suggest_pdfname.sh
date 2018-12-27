@@ -15,12 +15,29 @@ if [ ! $# = 1 ]; then
 	exit
 fi
 
+# Try to find an arXiv mark on the first page of the document
+arxiv_line=$(pdftotext -f 1 -l 1 "$1" - | egrep "arXiv:[0-9.]+.*\[[a-z-]+\.[A-Z]+\]")
+# echo $arxiv_line
+if [ -n "$arxiv_line" ]; then
+	arxiv=$(echo $arxiv_line |\
+		awk 'match($0,/[0-9]{4}\.[0-9]{4,}([v][0-9]*)?/) { print substr($0,RSTART,RLENGTH)}');
+	# echo $arxiv
+fi
+if [ -n "$arxiv" ]; then
+	arxiv2pdfname.sh $arxiv;
+	exit 0
+fi
+
+
 # See if pdfinfo has the document's DOI
 doi_line=$(pdfinfo "$1" | grep -i doi)
 # echo $doi_line
 if [ -n "$doi_line" ]; then
 	# match the first occurence of at least 10 of the admissible characters
 	# NOTE: pattern may be incomplete and not match all possible DOIs
+	# NOTE: The pattern will also find dummy DOIs of the form 
+	# https://doi.org/10.1145/nnnnnnn.nnnnnnn as, for instance, in 
+	# https://arxiv.org/abs/1808.05513v1
 	doi=$(echo $doi_line |\
 		awk 'match($0,/10\.[a-zA-Z0-9./()-]{10,}/) { print substr($0,RSTART,RLENGTH)}');
 	# echo $doi
@@ -37,7 +54,9 @@ fi
 if [[ $1 == *BOOK* ]]; then
 	doi_line=$(pdftotext -f 1 -l 10 "$1" - | grep -i doi)
 else
-	doi_line=$(pdftotext -f 1 -l 2 "$1" - | grep -i doi)
+	# SIAM journal articles tend to use the word DOI in a funny way so that
+	# pdftotext would extract the string "\bfD \bfO \bfI"
+	doi_line=$(pdftotext -f 1 -l 2 "$1" - | egrep -i "(doi|\\\bfD \\\bfO \\\bfI)")
 fi;
 # echo $doi_line
 if [ -n "$doi_line" ]; then
@@ -50,22 +69,6 @@ fi
 # If DOI search was successful, run a crossref query on it
 if [ -n "$doi" ]; then
 	doi2pdfname.sh $doi;
-	exit 0
-fi
-
-
-# Try to find an arXiv mark on the first page of the document
-# TODO This is not reliable since an abstract might actually contain
-# a reference to an arXiv paper.
-arxiv_line=$(pdftotext -f 1 -l 1 "$1" - | grep -i arXiv:)
-# echo $arxiv_line
-if [ -n "$arxiv_line" ]; then
-	arxiv=$(echo $arxiv_line |\
-		awk 'match($0,/[0-9]{4}\.[0-9]{4,}([v][0-9]*)?/) { print substr($0,RSTART,RLENGTH)}');
-	# echo $arxiv
-fi
-if [ -n "$arxiv" ]; then
-	arxiv2pdfname.sh $arxiv;
 	exit 0
 fi
 
