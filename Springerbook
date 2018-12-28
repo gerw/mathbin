@@ -102,7 +102,7 @@ else
 	# Create a list of files to concatenate
 	perl -ne '/^Saving to: (‘|\`|“)(.+?)(’|'\''|”)$/ and print "$2\n";' < logfile > download_list
 
-	# pdftk is confused by the name of the downloaded files.
+	# qpdf is confused by the name of the downloaded files.
 	# Therefore, we rename them.
 	j=0;
 	rm -f concat_list;
@@ -113,7 +113,7 @@ else
 
 	# Concatenate the pdf files to a book
 	echo "$(basename $0): Concatenating files"
-	pdftk `cat concat_list` cat output $BOOKTITLE.pdf
+	qpdf --empty $BOOKTITLE.pdf --pages $(cat concat_list) --
 fi
 
 # Return to the current directory

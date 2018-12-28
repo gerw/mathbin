@@ -54,7 +54,7 @@ done
 # Create a list of files to concatenate
 grep -e "^Saving to:.*" logfile | grep --only-matching -e "[[:alnum:]-]*\.pdf[[:alnum:].?=&;]*" | uniq > download_list
 
-# pdftk is confused by the name of the downloaded files.
+# qpdf is confused by the name of the downloaded files.
 # Therefore, we rename them.
 j=0;
 rm -f concat_list;
@@ -67,7 +67,7 @@ BOOKTITLE=$ISBN
 
 # Concatenate the pdf files to a book
 echo "$(basename $0): Concatenating files"
-pdftk `cat concat_list` cat output $BOOKTITLE.pdf
+qpdf --empty $BOOKTITLE.pdf --pages $(cat concat_list) --
 
 # Return to the current directory
 popd

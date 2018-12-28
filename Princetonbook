@@ -49,7 +49,7 @@ wget --user-agent="Mozilla/5.0" -i list -o logfile
 # See http://superuser.com/questions/270256/how-to-make-grep-p-foo-b-r-display-only-whats-in-the-brackets-do-i-need
 perl -ne '/^Saving to: (‘|\`|“)(.+?)(’|'\''|”)$/ and print "$2\n";' < logfile > download_list
 
-# pdftk is confused by the name of the downloaded files.
+# qpdf is confused by the name of the downloaded files.
 # Therefore, we rename them.
 j=0;
 rm -f concat_list;
@@ -63,7 +63,7 @@ IFS=$OIFS
 
 # Concatenate the pdf files to a book
 echo "$(basename $0): Concatenating files"
-pdftk $(cat concat_list) cat output $BOOKTITLE
+qpdf --empty $BOOKTITLE --pages $(cat concat_list) --
 
 # Return to the current directory
 popd

@@ -53,7 +53,7 @@ fi
 # See http://superuser.com/questions/270256/how-to-make-grep-p-foo-b-r-display-only-whats-in-the-brackets-do-i-need
 perl -ne '/^Saving to: (‘|\`|“)(.+?)(’|'\''|”)$/ and print "$2\n";' < logfile > download_list
 
-# pdftk is confused by the name of the downloaded files.
+# qpdf is confused by the name of the downloaded files.
 # Therefore, we rename them.
 j=0;
 rm -f concat_list;
@@ -64,7 +64,7 @@ done
 
 # Concatenate the pdf files to a book
 echo "$(basename $0): Concatenating files"
-pdftk $(cat concat_list) cat output $ID.pdf
+qpdf --empty $ID.pdf --pages $(cat concat_list) --
 
 # Fetch the title
 TITLE=$(grep "<h2>" source | perl -ne '/<h2>(.*)<\/h2>/ and $string=$1 and $string =~ s/ /_/g and print "$string\n";')
