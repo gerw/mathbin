@@ -120,4 +120,67 @@ PROG2='
 	next;
 }'
 
-zentralblatt.pl "$@" | awk "$PROG1" | gawk "$PROG2"
+# The last program changes the format of the authors from
+#   A. {Thor}
+# (which causes some trouble with biber/biblatex) to
+#   Thor, A.
+PROG3='
+/@[A-Z]*{[A-Za-z0-9.]*,/{
+	# Print the header and init some variables.
+	head=substr($0,0,match($0,"{"));
+	authors_active=0;
+	print; next;
+}
+/^[^=]*$/{
+	if(authors_active){
+		authors=authors $0;
+		next;
+	}
+}
+/ *[A-Z]* =/{
+	if( $1 == "AUTHOR" ) {
+		authors=substr($0,match($0,"{")+1,100);
+		authors_active=1;
+		next;
+	}
+	else {
+		if( authors_active ) {
+			# Remove trailing "},"
+			authors = substr(authors,0,match(authors,"},$")-1);
+			count=split(authors,author_array," +and +");
+			authors = "";
+			for( i=1; i<=count; i++ ) {
+				name = author_array[i];
+				# printf "--\"%s\"--", name;
+				# Find the split point between first name and last name.
+				# This should be the last space which is outside of braces
+				braces = 0;
+				for( j = 0; j < length(name); j++ ) {
+					char = substr(name,j,1);
+					if( char == "{" ) {
+						braces++;
+					}
+					else if( char == "}" ) {
+						braces--;
+					}
+					else if( char == " " && braces == 0 ) {
+						splitpoint = j;
+					}
+				}
+				givenname = substr(name, 0, splitpoint - 1);
+				lastname = substr(name, splitpoint+2, match(name,"}$")-splitpoint-2);
+				if( authors != "" ) {
+					authors = authors " and ";
+				}
+				authors = authors lastname ", " givenname;
+			}
+			# Output the authors
+			print "     AUTHOR = {" authors "},";
+		}
+		authors_active=0;
+	};
+}
+//
+'
+
+zentralblatt.pl "$@" | awk "$PROG1" | gawk "$PROG2" | awk "$PROG3"
