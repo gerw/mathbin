@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-import xml.etree.ElementTree as ET
+from lxml import etree
 import sys
 
 import re
 
-tree = ET.parse(sys.argv[1])
+tree = etree.parse(sys.argv[1])
 root = tree.getroot()
 
 names = []
@@ -26,6 +26,11 @@ for child in root.iter():
 				name = name.replace(' ', '')
 				names.append(name)
 			if title == "" and re.search('title$', grandchild.tag):
+				if re.search('}series_metadata$', grandchild.find('../..').tag):
+					# Springer books sometimes include a title of the book series,
+					# e.g., 10.1007/978-3-642-04490-8.
+					# We try to filter that out.
+					continue
 				title = grandchild.text.strip()
 				# remove double whitespaces
 				title = ' '.join(title.split())
