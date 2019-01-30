@@ -26,7 +26,7 @@ title=$( perl -ne "/$titlepattern/ and print \$1" < $tmpfile | awk '{gsub(" ","_
 # Get authors
 authorpattern="<meta name=\"citation_author\" content=\"([^\"]+),.*\""
 author=$( perl -ne "/$authorpattern/ and print \$1 . \"_\"" < $tmpfile | recode html)
-author=$(echo $author | awk '{ gsub (" ", "", $0); print}');
+author=$(echo $author | awk '{ gsub ("[ '\'']", "", $0); print}');
 # Remove spaces
 # Uppercase initial letter and everything after a space
 # author=$(echo $author |\
