@@ -19,7 +19,9 @@ if [ $# = 0 ]; then
 fi
 
 # Extract doi. Pattern from https://github.com/regexhq/doi-regex/blob/master/index.js
-DOI=$(echo $1 | grep '10[.][0-9]{4,}(?:[.][0-9]+)*/(?:(?![%"#? ])\S)+' -P -o )
+# DOI=$(echo $1 | grep '10[.][0-9]{4,}(?:[.][0-9]+)*/(?:(?![%"#? ])\S)+' -P -o )
+# https://www.crossref.org/blog/dois-and-matching-regular-expressions/
+DOI=$(echo $1 | egrep '10[.][0-9]{4,9}/[-._;()/:a-zA-Z0-9]+' -o )
 
 BIBTEX=$(curl -LH "Accept: application/x-bibtex" "http://dx.doi.org/$DOI" 2> /dev/null)
 #echo "$BIBTEX"
