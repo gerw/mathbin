@@ -2,7 +2,6 @@
 
 from lxml import etree
 import sys
-
 import re
 
 tree = etree.parse(sys.argv[1])
@@ -34,6 +33,8 @@ for child in root.iter():
 				title = grandchild.text.strip()
 				# remove double whitespaces
 				title = ' '.join(title.split())
+				# replace multiple dashes
+				title = re.sub('--','-', title)
 
 
 filename = '_'.join(names) + "__" + title + suffix + ".pdf"

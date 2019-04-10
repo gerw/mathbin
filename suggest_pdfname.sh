@@ -16,7 +16,8 @@ if [ ! $# = 1 ]; then
 fi
 
 # Try to find an arXiv mark on the first page of the document
-arxiv_line=$(pdftotext -f 1 -l 1 "$1" - | egrep "arXiv:[0-9.]+.*\[[a-z-]+\.[A-Z]+\]")
+# arxiv_line=$(pdftotext -f 1 -l 1 "$1" - | egrep "arXiv:[0-9.]+.*\[[a-z-]+\.[A-Z]+\]")
+arxiv_line=$(pdftotext -f 1 -l 1 "$1" - | egrep "arXiv:[0-9.]+")
 # echo $arxiv_line
 if [ -n "$arxiv_line" ]; then
 	arxiv=$(echo $arxiv_line |\
