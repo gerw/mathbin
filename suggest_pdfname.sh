@@ -57,7 +57,7 @@ if [[ $1 == *BOOK* ]]; then
 else
 	# SIAM journal articles tend to use the word DOI in a funny way so that
 	# pdftotext would extract the string "\bfD \bfO \bfI"
-	doi_line=$(pdftotext -f 1 -l 2 "$1" - | egrep -i "(doi|\\\bfD \\\bfO \\\bfI)")
+	doi_line=$(pdftotext -f 1 -l 2 "$1" - | egrep -i "(doi|\\\bfD \\\bfO \\\bfI|Digital Object Identifier)")
 fi;
 # echo $doi_line
 if [ -n "$doi_line" ]; then
