@@ -129,8 +129,8 @@ awk "$PROGFILTER" $DOWNLOAD | awk "$PROGREDUCESPACES" - | awk "$PROGHTMLDECODE" 
 # exit 2
 
 # Create the search pattern for regular downloadable documents
-LINEPATTERN='<td class="first"><span>(.*)</span></td>\s*<td><abbr title="[a-zA-Z]+"><span class="contentType">(..)<span></span></span></abbr></td>\s*<td class="titel">(<strong>)?(.*) (\[.*\])</a>(</strong>)?</td>\s*<td><a href="([^>]*)">([A-Z]{3,4})</a>(, <a href="([^>]*)">([A-Z]{3,4})</a>)?</td>'
-LINEPATTERN='<td class="first"><span>(.*)</span></td>\s*<td><abbr title="[a-zA-Z]+"><span class="contentType">(..)<span></span></span></abbr></td>\s*<td class="titel">(<span size=[^>]*>)?(<strong>)?([^<]*)(</span>)?(.*) (\[.*\])</a>(</strong>)?</td>\s*<td><a href="([^>]*)">([A-Z]{3,4})</a>(, <a href="([^>]*)">([A-Z]{3,4})</a>)?</td>'
+LINEPATTERN='<td class="first"><span>(.*)</span></td>[[:space:]]*<td><abbr title="[a-zA-Z]+"><span class="contentType">(..)<span></span></span></abbr></td>[[:space:]]*<td class="titel">(<strong>)?(.*) (\[.*\])</a>(</strong>)?</td>[[:space:]]*<td><a href="([^>]*)">([A-Z]{3,4})</a>(, <a href="([^>]*)">([A-Z]{3,4})</a>)?</td>'
+LINEPATTERN='<td class="first"><span>(.*)</span></td>[[:space:]]*<td><abbr title="[a-zA-Z]+"><span class="contentType">(..)<span></span></span></abbr></td>[[:space:]]*<td class="titel">(<span size=[^>]*>)?(<strong>)?([^<]*)(</span>)?(.*) (\[.*\])</a>(</strong>)?</td>[[:space:]]*<td><a href="([^>]*)">([A-Z]{3,4})</a>(, <a href="([^>]*)">([A-Z]{3,4})</a>)?</td>'
 
 # Extract the relevant pieces of information from each line
 i=0
