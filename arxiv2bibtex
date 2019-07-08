@@ -48,6 +48,19 @@ fi
 # Better?
 URL="https://arxiv2bibtex.org/?q=$arxiv&format=biblatex"
 
-wget -O - $URL -q | xmllint  --xpath '//div[@id="biblatex"]/textarea/text()' -
+ENTRY=$(wget -O - $URL -q | xmllint  --xpath '//div[@id="biblatex"]/textarea/text()' -)
+
+
+# If we have bibtool (https://ctan.org/pkg/bibtool) we can use it to format the key
+if [ -x "$(command -v bibtool)" ] ; then
+	ENTRY=$(echo "$ENTRY" | bibtool -f "%n(author)%4d(year)" \
+		-- "new.entry.type {online}" \
+		-- 'fmt.name.name = ""' \
+		-- 'print.align.key = 0'\
+		-- 'print.line.length = 1000'\
+		)
+fi
+
+echo "$ENTRY"
 
 echo
