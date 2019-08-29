@@ -64,9 +64,11 @@ PROG2='
 			idx=match(author_array[i]," [^ ]*$");
 			lastname=substr(author_array[i],idx+1,length(author_array[i]));
 		}
-		lastname=gensub("{\\\\\"([a-zA-Z])}","\\1e","g", lastname); # test for {umlauts}
+		lastname=gensub("{\\\\\"([a-zA-Z])}","\\1e","g", lastname); # test for {\"umlauts}
+		lastname=gensub("\\\\\"{([a-zA-Z])}","\\1e","g", lastname); # test for \"{umlauts}
 		lastname=gensub("\\\\\"([a-zA-Z])","\\1e","g", lastname);   # test for umlauts
 		lastname=gensub("{\\\\ss}","ss","g", lastname);             # test for eszett
+		lastname=gensub("\\\\l","l","g", lastname);                 # test for \l
 		lastname=gensub("{[^{}]*([a-zA-Z])}","\\1","g", lastname);  # test for accents (this is needed two times, e.g. for "{\v{c}}")
 		lastname=gensub("{[^{}]*([a-zA-Z])}","\\1","g", lastname);
 		lastname=gensub("\\\\'\''","","g", lastname);               # Remove \apostroph
@@ -81,6 +83,7 @@ PROG2='
 	};
 	print year ",";
 	print body;
+	print "";
 	next;
 }
 / *[A-Z]* =/{
