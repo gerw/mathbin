@@ -56,8 +56,10 @@ if [ -x "$(command -v bibtool)" ] ; then
 	ENTRY=$(echo "$ENTRY" | bibtool -f "%n(author)%4d(year)_preprint" \
 		-- "new.entry.type {online}" \
 		-- 'fmt.name.name = ""' \
+		-- 'add.field {type = "Preprint"}' \
 		-- 'print.align.key = 0'\
 		-- 'print.line.length = 1000'\
+		-- 'print.use.tab = 0'\
 		)
 fi
 
