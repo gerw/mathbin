@@ -12,7 +12,7 @@ title = ""
 suffix = ""
 
 for child in root.iter():
-	# print child.tag
+	# print(child.tag)
 	if re.search('book$', child.tag):
 		suffix = "_BOOK"
 	if re.search('(content_item|journal_article|book)$', child.tag):
@@ -47,4 +47,4 @@ items = {
 for s, r in items.iteritems():
 	filename = filename.replace(s, r)
 
-print filename.encode("utf8")
+print(filename.encode("utf8"))
