@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from lxml import etree
 import sys
@@ -44,7 +44,7 @@ items = {
 	'/': '_',
 	' ': '_'
 }
-for s, r in items.iteritems():
+for s, r in items.items():
 	filename = filename.replace(s, r)
 
-print(filename.encode("utf8"))
+print(filename)
