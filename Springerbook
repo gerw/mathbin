@@ -18,7 +18,7 @@ ISBN=`echo $URL | grep -o '[0-9]\{3\}-[0-9]\{1\}-[0-9]\{3,5\}-[0-9]\{3,5\}-[0-9X
 if [ $ISBN"xxx" == "xxx" ]; then
 	# Alternative: just try to download $1 and grep the ISBN there.
 	download=$(mktemp) # Generate temp filename
-	wget --user-agent="Mozilla/5.0" $1 -O $download
+	wget $1 -O $download
 	ISBN=`grep -o '[0-9]\{3\}-[0-9]\{1,2\}-[0-9]\{3,5\}-[0-9]\{3,5\}-[0-9X]\{1\} (Print)' $download | grep -o '[0-9-]*'`
 	rm $download
 	if [ $ISBN"xxx" == "xxx" ]; then
@@ -40,7 +40,8 @@ mkdir /tmp/$ISBN
 # Get the source
 cd /tmp/$ISBN
 echo "$(basename $0): Getting the HTML source"
-wget --user-agent="Mozilla/5.0" http://www.springerlink.com/content/$ISBN/contents -O source
+# wget http://www.springerlink.com/content/$ISBN/contents -O source
+wget https://link.springer.com/book/10.1007/$ISBN -O source
 
 # If resource was secured, print an error message and exit
 grep --silent "Get Access" source
@@ -62,7 +63,7 @@ if [[ "X$FULLBOOKPATH" != "X" ]]; then
 	echo "$(basename $0): Getting the full book"
 
 	# Download full book
-	wget --user-agent="Mozilla/5.0" http://link.springer.com$FULLBOOKPATH -o logfile
+	wget http://link.springer.com$FULLBOOKPATH -o logfile
 
 	# Find name of PDF
 	PDF=$(perl -ne '/^Saving to: (‘|\`|“)(.+?)(’|'\''|”)$/ and print "$2\n";' < logfile)
@@ -73,7 +74,7 @@ else
 	# Get all pages
 	while grep 'class="next"' source | tail -n 1 | grep -q '<a class="next"'; do
 		nextpage=$(grep 'class="next"' source | tail -n 1 | grep -o '/book/[^"]*')
-		wget --user-agent="Mozilla/5.0" http://link.springer.com$nextpage -O - >> source
+		wget http://link.springer.com$nextpage -O - >> source
 	done
 
 	# Parse the source to retrieve an ordered list of download URLs
@@ -90,7 +91,7 @@ else
 
 	# Retrieve the individual files from Springer
 	echo "$(basename $0): Getting the individual chapter files"
-	wget --user-agent="Mozilla/5.0" -i list --base="http://link.springer.com" -o logfile
+	wget -i list --base="http://link.springer.com" -o logfile
 
 	# If resource was secured, print an error message and exit
 	grep --silent resource-secured logfile
