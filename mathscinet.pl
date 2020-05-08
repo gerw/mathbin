@@ -100,9 +100,10 @@ $url=new URI::URL(
 $req=new HTTP::Request(GET, $url, $hdrs);
 $resp=$ua->request($req);
 
-$resp->is_success ||
-  print STDERR $resp->message . "\n" &&
+if(not $resp->is_success) {
+  print STDERR "error code: ".$resp->code()."\nmessage: ".$resp->message . "\n";
   die("failed to get search results from MathSciNet");
+}
 $resp->as_string =~ /No publications results/ &&
   die("no results for this search");
 
