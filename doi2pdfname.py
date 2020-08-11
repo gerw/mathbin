@@ -4,7 +4,8 @@ from lxml import etree
 import sys
 import re
 
-tree = etree.parse(sys.argv[1])
+parser = etree.XMLParser(remove_comments=True)
+tree = etree.parse(sys.argv[1], parser=parser)
 root = tree.getroot()
 
 names = []
