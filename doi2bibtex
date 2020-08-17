@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# doi2bibtex - Get BibTex from DOI
+# doi2bibtex - Get BibTeX from DOI
 #
 # Authors: Felix Ospald <felix.ospald@mathematik.tu-chemnitz.de>
 #          Gerd Wachsmuth <gerd.wachsmuth@mathematik.tu-chemnitz.de>
@@ -14,7 +14,7 @@
 if [ $# = 0 ]; then
 	echo "Usage: $(basename $0) DOI"
 	echo "or:    $(basename $0) http://dx.doi.org/DOI"
-	echo "will try and retrieve the BibTex file for the DOI given."
+	echo "will try and retrieve the BibTeX file for the DOI given."
 	exit 1
 fi
 
@@ -23,8 +23,8 @@ fi
 # https://www.crossref.org/blog/dois-and-matching-regular-expressions/
 DOI=$(echo $1 | egrep '10[.][0-9]{4,9}/[-._;()/:a-zA-Z0-9]+' -o )
 
-BIBTEX=$(curl -LH "Accept: application/x-bibtex" "http://dx.doi.org/$DOI" 2> /dev/null)
-#echo "$BIBTEX"
+BIBTEX=$(curl -LH "Accept: application/x-bibtex" "https://doi.org/$DOI" 2> /dev/null)
+# echo "$BIBTEX"
 
 PROG1='
 BEGIN {
