@@ -5,7 +5,8 @@ import sys
 import re
 
 # Parse the given file
-tree = etree.parse(sys.argv[1])
+parser = etree.XMLParser(remove_comments=True)
+tree = etree.parse(sys.argv[1], parser=parser)
 root = tree.getroot()
 
 # Prepare some variables
