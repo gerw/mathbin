@@ -4,9 +4,11 @@ from lxml import etree
 import sys
 import re
 
+# Parse the given file
 tree = etree.parse(sys.argv[1])
 root = tree.getroot()
 
+# Prepare some variables
 names = []
 title = ""
 suffix = ""
