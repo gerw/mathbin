@@ -46,7 +46,7 @@ fi
 # If DOI search was successful, run a crossref query on it
 if [ -n "$doi" ]; then
 	doi2pdfname.sh $doi;
-	exit 0
+	exit $?
 fi
 
 
