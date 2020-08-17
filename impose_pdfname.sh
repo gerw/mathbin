@@ -10,7 +10,14 @@ fi
 
 # Show what the name will be
 name=$(suggest_pdfname.sh "$1")
+returnValue=$?
 
+# Check return status from suggest_pdfname.sh
+if [ $returnValue -ne 0 ]; then
+	exit $returnValue
+fi
+
+# Check whether a non-empty suggested name came back from suggest_pdfname.sh
 if [ -z "$name" ]; then
 	exit 1
 else
