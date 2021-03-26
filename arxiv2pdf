@@ -3,7 +3,7 @@
 # Script for downloading a PDF from a given arXiv identifier
 #      
 # Usage:    arxiv2pdf arXiv [filename]
-#           arxiv2pdf http://arxiv.org/abs/arXiv [filename]
+#           arxiv2pdf https://arxiv.org/abs/arXiv [filename]
 #      
 # If filename is omitted the raw PDF is written to a temporary file.
 #      
@@ -16,19 +16,20 @@
 # Issue help message if necessary
 if [ $# = 0 ] || [ "x$1" = "x--help" ]; then
 	echo "Usage: $(basename $0) arXiv [filename]"
-	echo "or:    $(basename $0) http://arxiv.org/abs/arXiv [filename]"
+	echo "or:    $(basename $0) https://arxiv.org/abs/arXiv [filename]"
 	echo "will try and retrieve the PDF file for the arXiv identifier given."
 	echo 
 	echo "Example: $(basename $0) 1701.06092"
 	echo "         $(basename $0) 1701.06092v1"
-	echo "         $(basename $0) http://arxiv.org/abs/1701.06092v1"
+	echo "         $(basename $0) https://arxiv.org/abs/1701.06092v1"
+	echo "         $(basename $0) https://arxiv.org/abs/1701.06092v1.pdf"
 	echo "         $(basename $0) math/0602029"
-	echo "         $(basename $0) http://arxiv.org/abs/math/0602029"
+	echo "         $(basename $0) https://arxiv.org/abs/math/0602029"
 	exit 1
 fi
 
 # Unify the calling syntax
-arxivpattern='([0-9]{4}\.[0-9]{4,}([v][0-9]*)?|[-a-z]{1,}/[0-9]{7})$'
+arxivpattern='([0-9]{4}\.[0-9]{4,}([v][0-9]*)?|[-a-z]{1,}/[0-9]{7})(.pdf)?$'
 if [[ $1 =~ $arxivpattern ]]; then
 	arxiv=${BASH_REMATCH[1]}
 else
@@ -40,7 +41,7 @@ fi
 tmpfile=/tmp/$RANDOM$RANDOM
 # echo $1
 # echo $arxiv
-curl -sL http://arxiv.org/abs/$arxiv > ${tmpfile}
+curl -sL https://arxiv.org/abs/$arxiv > ${tmpfile}
 
 # Get download URL 
 downloadpattern="<meta name=\"citation_pdf_url\" content=\"([^\"]+)\""
