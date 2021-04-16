@@ -8,7 +8,7 @@ for e.g.
 
 ## Usage with Mac OS
 
-Most of the scripts and tools provided here work directly with Mac OS (tested Big Sur), only two terminal tools are missing/wrong
+Most of the scripts and tools provided here work directly with Mac OS. This is tested with Mac OS 11 Big Sur, but should work with Mac OS 10.15 Catalina as well, maybe even earlier; just note that with Catalina zsh got the default shell. The issue is, that two tools are missing/wrong
 
 * `grep` is different from the GNU grep used here (especially the option `-P` is not available on Mac OS)
 * `curl` is missing
