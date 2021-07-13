@@ -36,3 +36,15 @@ echo '\nexport PATH="$(brew --prefix)/opt/grep/libexec/gnubin:$PATH"' >> ~/.zshr
 ```shell
 brew install curl
 ```
+
+# use docker to run the scripts
+
+first build the container by running
+```
+docker build -t mathbin .
+```
+from this folder. That creates an image with the name mathbin. Afterwards you can use that image like
+```
+docker run -rm -v $(pwd):/data mathbin doi2pdf 10.1007/978-1-4612-2972-8
+```
+The option *-rm* removes the container after downloading the pdf (not the image!), whereas *-v* binds your working directory on the host to the folder /data on the container.
