@@ -21,7 +21,7 @@ curl -sL http://arxiv.org/abs/$1 > $tmpfile
 # Get title
 # Replace space, slash /, apostrophe ', colon : by underscore _
 titlepattern="<meta name=\"citation_title\" content=\"([^\"]+)\""
-title=$( perl -ne "/$titlepattern/ and print \$1" < $tmpfile | awk '{gsub(" ","_"); gsub("/","_"); gsub("&#x27;","\x27"); gsub(":","_"); gsub("-[-]+","-"); gsub("_[_]+","_"); print}')
+title=$( perl -ne "/$titlepattern/ and print \$1" < $tmpfile | awk '{gsub(" ","_"); gsub("/","_"); gsub("&#x27;","\x27"); gsub("&#39;","\x27"); gsub(":","_"); gsub("-[-]+","-"); gsub("_[_]+","_"); print}')
 
 # Get authors
 authorpattern="<meta name=\"citation_author\" content=\"([^\"]+),.*\""
