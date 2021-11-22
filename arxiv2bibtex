@@ -11,15 +11,15 @@
 
 # Issue help message if necessary
 if [ $# = 0 ] || [ "x$1" = "x--help" ]; then
-	echo "Usage: $(basename $0) arXiv"
-	echo "or:    $(basename $0) http://arxiv.org/abs/arXiv"
-	echo "will try and retrieve a bibtex entry for the arXiv identifier given."
-	echo 
-	echo "Example: $(basename $0) 1701.06092"
-	echo "         $(basename $0) 1701.06092v1"
-	echo "         $(basename $0) http://arxiv.org/abs/1701.06092v1"
-	echo "         $(basename $0) math/0602029"
-	echo "         $(basename $0) http://arxiv.org/abs/math/0602029"
+	>&2 echo "Usage: $(basename $0) arXiv"
+	>&2 echo "or:    $(basename $0) http://arxiv.org/abs/arXiv"
+	>&2 echo "will try and retrieve a bibtex entry for the arXiv identifier given."
+	>&2 echo
+	>&2 echo "Example: $(basename $0) 1701.06092"
+	>&2 echo "         $(basename $0) 1701.06092v1"
+	>&2 echo "         $(basename $0) http://arxiv.org/abs/1701.06092v1"
+	>&2 echo "         $(basename $0) math/0602029"
+	>&2 echo "         $(basename $0) http://arxiv.org/abs/math/0602029"
 	exit 1
 fi
 
