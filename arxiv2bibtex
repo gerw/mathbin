@@ -61,8 +61,10 @@ if [ -x "$(command -v bibtool)" ] ; then
 		-- 'print.line.length = 1000'\
 		-- 'print.use.tab = 0'\
 		)
+
+	ENTRY=${ENTRY/#$'\n'}   # Remove a leading newline.
 fi
 
 echo "$ENTRY"
 
-echo
+echo # Add an additional newline
