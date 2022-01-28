@@ -24,7 +24,7 @@ fi
 DOI=$(echo $1 | egrep '10[.][0-9]{4,9}/[-._;()/:a-zA-Z0-9<>]+' -o )
 
 BIBTEX=$(curl -LH "Accept: application/x-bibtex" "https://doi.org/$DOI" 2> /dev/null)
-# echo "$BIBTEX"
+# env echo "$BIBTEX"
 
 PROG1='
 BEGIN {
@@ -129,7 +129,7 @@ PROG2='
 	next;
 }'
 
-echo "$BIBTEX" | awk "$PROG1" | gawk "$PROG2"
+env echo "$BIBTEX" | awk "$PROG1" | gawk "$PROG2"
 
 # add a newline
 echo
