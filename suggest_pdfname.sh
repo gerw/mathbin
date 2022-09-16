@@ -64,7 +64,7 @@ if [ -n "$doi_line" ]; then
 	# match the first occurence of at least 10 of the admissible characters
 	# NOTE: pattern may be incomplete and not match all possible DOIs
 	doi=$(echo $doi_line |\
-		awk 'match($0,/10\.[a-zA-Z0-9./()-]{10,}/) { print substr($0,RSTART,RLENGTH)}');
+		awk 'match($0,/10\.[a-zA-Z0-9./()-_]{10,}/) { print substr($0,RSTART,RLENGTH)}');
 	# echo $doi
 fi
 # If DOI search was successful, run a crossref query on it
@@ -72,7 +72,6 @@ if [ -n "$doi" ]; then
 	doi2pdfname.sh $doi;
 	exit 0
 fi
-
 
 
 # Fallback: try pdfinfo to read the document's title
