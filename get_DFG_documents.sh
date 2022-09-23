@@ -62,22 +62,23 @@ wget --quiet $URL -O $DOWNLOAD
 # Example for a pdf document
 # <td class="first"><span>50.01</span></td>
 # <td><abbr title="Deutsch"><span class="contentType">de<span></span></span></abbr></td>
-#   <td class="titel"><strong>Merkblatt Programm Sachbeihilfe [10/11]</a></strong></td>
-#   <td><a href="http://www.dfg.de/formulare/50_01/50_01_de.pdf">PDF</a></td>
+# <td class="titel"><strong>Merkblatt Programm Sachbeihilfe [04/21]</a></strong></td>
+# <td><a href="https://www.dfg.de/formulare/50_01/50_01_de.pdf" target="_blank">PDF</a></td>
 #
 # Example for a pdf and rtf document
 # <td class="first"><span>54.011</span></td>
-#   <td><abbr title="Deutsch"><span class="contentType">de<span></span></span></abbr></td>
-#   <td class="titel">Daten zum Antrag und Verpflichtungen - Projektantr&auml;ge (nur f&uuml;r Programme, in denen eine Antragstellung &uuml;ber das elan-Portal noch nicht m&ouml;glich ist) [03/18]</a></td>
-#   <td><a href="http://www.dfg.de/formulare/54_011/54_011_de.pdf">PDF</a>, <a href="http://www.dfg.de/formulare/54_011/54_011_de_rtf.rtf">RTF</a></td>
+# <td><abbr title="Deutsch"><span class="contentType">de<span></span></span></abbr></td>
+# <td class="titel">Daten zum Antrag und Verpflichtungen - Projektantr&auml;ge (nur f&uuml;r Programme, in denen eine Antragstellung &uuml;ber das elan-Portal noch nicht m&ouml;glich ist) [04/21]</a></td>
+# <td><a href="https://www.dfg.de/formulare/54_011/54_011_de.pdf" target="_blank">PDF</a>, <a href="https://www.dfg.de/formulare/54_011/54_011_de_rtf.rtf" target="_blank">RTF</a></td>
 #
 # Example for a jsp link, which we do not follow up on
 # <td class="first"><span>2.00</span></td>
-#   <td><abbr title="Deutsch"><span class="contentType">de<span></span></span></abbr></td>
-#   <td class="titel"><a href="http://www.dfg.de/formulare/2_00/index.jsp">Verwendungsrichtlinien - Allgemeine Bedingungen f&uuml;r F&ouml;rdervertr&auml;ge mit der Deutschen Forschungsgemeinschaft e.V. (DFG)</a></td>
-#   <td><a href="http://www.dfg.de/formulare/2_00/index.jsp"></a></td>
+# <td><abbr title="Deutsch"><span class="contentType">de<span></span></span></abbr></td>
+# <td class="titel"><a href="https://www.dfg.de/formulare/2_00/index.jsp" target="_blank">Verwendungsrichtlinien - Allgemeine Bedingungen f&uuml;r F&ouml;rdervertr&auml;ge mit der Deutschen Forschungsgemeinschaft e.V. (DFG)</a></td>
+# <td><a href="https://www.dfg.de/formulare/2_00/index.jsp" target="_blank"></a></td>
 #
 # Example for documents with title containing a stray <span> tag
+# Possibly no longer relevant as of 20220923
 # <td class="first"><span>21.40</span></td>
 #   <td><abbr title="Deutsch"><span class="contentType">de<span></span></span></abbr></td>
 #   <td class="titel"><span size=&quot;5&quot;>Antrag für Großgeräte in Forschungsbauten </span>nach Art. 91b GG [03/18]</a></td>
@@ -129,8 +130,7 @@ awk "$PROGFILTER" $DOWNLOAD | awk "$PROGREDUCESPACES" - | awk "$PROGHTMLDECODE" 
 # exit 2
 
 # Create the search pattern for regular downloadable documents
-LINEPATTERN='<td class="first"><span>(.*)</span></td>[[:space:]]*<td><abbr title="[a-zA-Z]+"><span class="contentType">(..)<span></span></span></abbr></td>[[:space:]]*<td class="titel">(<strong>)?(.*) (\[.*\])</a>(</strong>)?</td>[[:space:]]*<td><a href="([^>]*)">([A-Z]{3,4})</a>(, <a href="([^>]*)">([A-Z]{3,4})</a>)?</td>'
-LINEPATTERN='<td class="first"><span>(.*)</span></td>[[:space:]]*<td><abbr title="[a-zA-Z]+"><span class="contentType">(..)<span></span></span></abbr></td>[[:space:]]*<td class="titel">(<span size=[^>]*>)?(<strong>)?([^<]*)(</span>)?(.*) (\[.*\])</a>(</strong>)?</td>[[:space:]]*<td><a href="([^>]*)">([A-Z]{3,4})</a>(, <a href="([^>]*)">([A-Z]{3,4})</a>)?</td>'
+LINEPATTERN='<td class="first"><span>(.*)</span></td>[[:space:]]*<td><abbr title="[a-zA-Z]+"><span class="contentType">(..)<span></span></span></abbr></td>[[:space:]]*<td class="titel">(<span size=[^>]*>)?(<strong>)?([^<]*)(</span>)?(.*) (\[.*\])</a>(</strong>)?</td>[[:space:]]*<td><a href="([^>]*)"[[:space:]]+(target="_blank")?>([A-Z]{3,4})</a>(, <a href="([^>]*)"[[:space:]]+(target="_blank")?>([A-Z]{3,4})</a>)?</td>'
 
 # Extract the relevant pieces of information from each line
 i=0
@@ -142,9 +142,9 @@ while read LINE; do
 		formTitle[$i]=${BASH_REMATCH[5]}${BASH_REMATCH[7]}
 		formDate[$i]=${BASH_REMATCH[8]}
 		formURL[$i]=${BASH_REMATCH[10]}
-		formFileType[$i]=${BASH_REMATCH[11]} 
-		formURLSecond=${BASH_REMATCH[13]}
-		formFileTypeSecond=${BASH_REMATCH[14]} 
+		formFileType[$i]=${BASH_REMATCH[12]} 
+		formURLSecond=${BASH_REMATCH[14]}
+		formFileTypeSecond=${BASH_REMATCH[16]} 
 		# Canonicalize the form date 
 		# [07/10] -> [20100700]
 		# [2018]  -> [20180000]
