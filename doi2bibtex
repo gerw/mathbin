@@ -31,7 +31,7 @@ BEGIN {
 	IGNORECASE = 1;
 	delete_this_entry = 0;
 };
-/^@/ {
+/^\s*@/ {
 	# Print the header of the entry.
 	gsub(" ", "");
 	print(toupper($0));
@@ -128,6 +128,15 @@ PROG2='
 	body=body $0 "\n";
 	next;
 }'
+
+if [ $(echo "$BIBTEX" | wc -l) -lt 2 ];
+then
+	# Insert line breaks
+	BIBTEX=$(echo "$BIBTEX" | sed 's/,/&\n/' | sed 's/},/&\n/g' | sed 's/} }/}\n}/')
+fi
+
+# Fix "="
+BIBTEX=$(echo "$BIBTEX" | sed 's/ *= */ = /')
 
 env echo "$BIBTEX" | awk "$PROG1" | gawk "$PROG2"
 
