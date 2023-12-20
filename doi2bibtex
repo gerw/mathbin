@@ -132,7 +132,7 @@ PROG2='
 if [ $(echo "$BIBTEX" | wc -l) -lt 2 ];
 then
 	# Insert line breaks
-	BIBTEX=$(echo "$BIBTEX" | sed 's/,/&\n/' | sed 's/},/&\n/g' | sed 's/} }/}\n}/')
+	BIBTEX=$(echo "$BIBTEX" | sed 's/,/&\n/' | sed 's/},/&\n/g' | sed 's/}$/\n}/')
 fi
 
 # Fix "="
