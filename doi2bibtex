@@ -131,6 +131,8 @@ PROG2='
 
 # Remove month field from output
 BIBTEX=$(echo "$BIBTEX" | sed -E 's/month *= *[a-z]{3} *, *//')
+# Also if it is the last entry
+BIBTEX=$(echo "$BIBTEX" | sed -E 's/, *month *= *[a-z]{3} *//')
 
 if [ $(echo "$BIBTEX" | wc -l) -lt 2 ];
 then
