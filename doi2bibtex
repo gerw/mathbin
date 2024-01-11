@@ -129,6 +129,9 @@ PROG2='
 	next;
 }'
 
+# Remove month field from output
+BIBTEX=$(echo "$BIBTEX" | sed -E 's/month *= *[a-z]{3} *, *//')
+
 if [ $(echo "$BIBTEX" | wc -l) -lt 2 ];
 then
 	# Insert line breaks
