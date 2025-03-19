@@ -14,8 +14,7 @@ use Getopt::Long;
 
 ## Select a mirror which is appropriate.
 # $mirror = "http://www.ams.org/mathscinet/search/publications.html";
-# $mirror = "http://ams.mpim-bonn.mpg.de/mathscinet/search/publications.html";
-$mirror = "http://ams.mathematik.uni-bielefeld.de/mathscinet/search/publications.html";
+$mirror = "http://ams.mpim-bonn.mpg.de/mathscinet/search/publications.html";
 
 $VERSION='0.2';
 $curbox=4; # MathSciNet form has boxes for search terms numbered 4...7
